@@ -127,7 +127,14 @@
   .search-bar input::placeholder{color:var(--foam-dim);}
 
   section{position:relative; z-index:1; padding:70px 40px; max-width:1080px; margin:auto;}
-  .section-head{display:flex; align-items:baseline; gap:16px; margin-bottom:36px;}
+  .section-head{display:flex; align-items:baseline; gap:16px; margin-bottom:36px; flex-wrap:wrap;}
+  .suggest-btn{
+    margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:0.8em;
+    text-transform:uppercase; letter-spacing:0.05em; padding:10px 18px; border-radius:999px;
+    background:var(--copper); border:1px solid var(--copper); color:var(--malt-black);
+    font-weight:700; cursor:pointer; transition:background .2s, transform .2s;
+  }
+  .suggest-btn:hover{background:var(--copper-bright); transform:translateY(-1px);}
   .section-head h2{font-size:1.9em; font-weight:600;}
   .section-head .count{font-family:'JetBrains Mono',monospace; color:var(--copper); font-size:0.85em;}
 
@@ -303,6 +310,39 @@
   .modal .review-card{padding:18px; gap:16px;}
   .modal .review-card h3{font-size:1.05em;}
 
+  /* ---------- suggest-a-review form ---------- */
+  .suggest-form label{
+    display:block; font-family:'JetBrains Mono',monospace; font-size:0.75em;
+    text-transform:uppercase; letter-spacing:0.05em; color:var(--foam-dim);
+    margin:16px 0 6px;
+  }
+  .suggest-form label:first-of-type{margin-top:4px;}
+  .suggest-form input, .suggest-form select, .suggest-form textarea{
+    width:100%; padding:11px 14px; font-size:0.95em; font-family:'Inter',sans-serif;
+    background:var(--oak-light); border:1px solid var(--line); border-radius:8px;
+    color:var(--foam);
+  }
+  .suggest-form input:focus, .suggest-form select:focus, .suggest-form textarea:focus{
+    outline:2px solid var(--copper); outline-offset:1px;
+  }
+  .suggest-form textarea{resize:vertical; min-height:80px;}
+  .suggest-form .form-row{display:flex; gap:14px;}
+  .suggest-form .form-row > div{flex:1;}
+  .suggest-form .privacy-note{
+    margin:18px 0 0; font-size:0.8em; color:var(--foam-dim); opacity:0.8; line-height:1.4;
+  }
+  .suggest-form .submit-btn{
+    margin-top:22px; width:100%; padding:13px; font-family:'JetBrains Mono',monospace;
+    font-size:0.85em; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;
+    background:var(--copper); border:none; border-radius:999px; color:var(--malt-black);
+    cursor:pointer; transition:background .2s;
+  }
+  .suggest-form .submit-btn:hover{background:var(--copper-bright);}
+  .suggest-form .submit-btn:disabled{opacity:0.6; cursor:not-allowed;}
+  .form-status{margin-top:14px; font-size:0.9em;}
+  .form-status.success{color:var(--hop-green);}
+  .form-status.error{color:#d9704a;}
+
   @media (max-width:640px){
     nav{flex-direction:column; gap:14px; padding:16px 20px;}
     .nav-links{gap:18px; flex-wrap:wrap; justify-content:center;}
@@ -360,7 +400,10 @@
 </section>
 
 <section id="reviews">
-  <div class="section-head"><h2>Beer Reviews</h2><span class="count" id="reviewCount"></span></div>
+  <div class="section-head">
+    <h2>Beer Reviews</h2><span class="count" id="reviewCount"></span>
+    <button class="suggest-btn" id="suggestReviewBtn">+ Suggest a Review</button>
+  </div>
   <div class="tag-filter-bar" id="tagFilterBar"></div>
   <div id="reviewFeed"></div>
 </section>
@@ -384,6 +427,7 @@
       <p><span class="brand-small">Toasty Malts</span> · Craft beer reviews and tasting notes</p>
       <p>&copy; 2025 Toasty Malts</p>
       <p class="terms">All content, reviews, and images on this site are the property of their respective creators unless otherwise noted. Unauthorized reproduction or redistribution is prohibited.</p>
+      <p class="terms">Your email is only used to follow up on your submission and won't be published or shared.</p>
     </div>
   </div>
 </footer>
@@ -395,6 +439,54 @@
 <div class="lightbox-overlay" id="lightboxOverlay" role="dialog" aria-modal="true">
   <button class="lightbox-close" id="lightboxCloseBtn" aria-label="Close">&times;</button>
   <img id="lightboxImg" src="" alt="">
+</div>
+
+<div class="modal-overlay" id="suggestOverlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <button class="modal-close" id="suggestCloseBtn" aria-label="Close">&times;</button>
+    <h2 style="font-size:1.5em; margin-bottom:6px;">Suggest a Review</h2>
+    <p style="color:var(--foam-dim); font-size:0.92em; margin:0 0 8px;">Tried something worth rating? Send it in — we'll take a look and add it to the page.</p>
+
+    <form class="suggest-form" id="suggestForm">
+      <label for="sf-name">Your Name / Nickname</label>
+      <input type="text" id="sf-name" name="name" required placeholder="e.g. Captain">
+
+      <label for="sf-email">Your Email</label>
+      <input type="email" id="sf-email" name="email" required placeholder="so we can follow up if needed">
+
+      <label for="sf-beer">Beer Name</label>
+      <input type="text" id="sf-beer" name="beer" required placeholder="e.g. Haze Bomb Double IPA">
+
+      <div class="form-row">
+        <div>
+          <label for="sf-style">Style</label>
+          <input type="text" id="sf-style" name="style" required placeholder="e.g. IPA, Stout, Lager">
+        </div>
+        <div>
+          <label for="sf-stars">Star Rating</label>
+          <select id="sf-stars" name="stars" required>
+            <option value="">Select...</option>
+            <option value="★☆☆☆☆">1 star</option>
+            <option value="★★☆☆☆">2 stars</option>
+            <option value="★★★☆☆">3 stars</option>
+            <option value="★★★★☆">4 stars</option>
+            <option value="★★★★½">4.5 stars</option>
+            <option value="★★★★★">5 stars</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="sf-score">Malt Score (0–100)</label>
+      <input type="number" id="sf-score" name="score" min="0" max="100" required placeholder="e.g. 88">
+
+      <label for="sf-note">Tasting Note</label>
+      <textarea id="sf-note" name="note" required placeholder="What did it taste like? Keep it short and punchy."></textarea>
+
+      <p class="privacy-note">Your email is only used to follow up on this submission and won't be published or shared.</p>
+      <button type="submit" class="submit-btn" id="suggestSubmitBtn">Submit Suggestion</button>
+      <div class="form-status" id="suggestFormStatus"></div>
+    </form>
+  </div>
 </div>
 
 <script>
@@ -658,15 +750,65 @@
   footerLogoBtn.addEventListener('click', () => openLightbox('images/Logo_Toastymalts.png', 'Toasty Malts logo, enlarged'));
   lightboxCloseBtn.addEventListener('click', closeLightbox);
 
+  // ---------- suggest-a-review form ----------
+  const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mvzeyyze';
+
+  const suggestOverlay = document.getElementById('suggestOverlay');
+  const suggestReviewBtn = document.getElementById('suggestReviewBtn');
+  const suggestCloseBtn = document.getElementById('suggestCloseBtn');
+  const suggestForm = document.getElementById('suggestForm');
+  const suggestSubmitBtn = document.getElementById('suggestSubmitBtn');
+  const suggestFormStatus = document.getElementById('suggestFormStatus');
+
+  function openSuggestForm(){
+    suggestOverlay.classList.add('open');
+    suggestFormStatus.textContent = '';
+    suggestFormStatus.className = 'form-status';
+  }
+  function closeSuggestForm(){ suggestOverlay.classList.remove('open'); }
+
+  suggestReviewBtn.addEventListener('click', openSuggestForm);
+  suggestCloseBtn.addEventListener('click', closeSuggestForm);
+
+  suggestForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    suggestSubmitBtn.disabled = true;
+    suggestSubmitBtn.textContent = 'Sending...';
+    suggestFormStatus.textContent = '';
+    suggestFormStatus.className = 'form-status';
+
+    try{
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: new FormData(suggestForm)
+      });
+      if(res.ok){
+        suggestFormStatus.textContent = "Thanks! Your suggestion has been sent — we'll take a look.";
+        suggestFormStatus.className = 'form-status success';
+        suggestForm.reset();
+      } else {
+        throw new Error('submission failed');
+      }
+    } catch(err){
+      suggestFormStatus.textContent = "Something went wrong sending that — please try again in a moment.";
+      suggestFormStatus.className = 'form-status error';
+    } finally {
+      suggestSubmitBtn.disabled = false;
+      suggestSubmitBtn.textContent = 'Submit Suggestion';
+    }
+  });
+
   document.addEventListener('click', (e) => {
     const card = e.target.closest('[data-taster]');
     if(card){ openProfile(card.getAttribute('data-taster')); return; }
     if(e.target === overlay){ closeProfile(); }
     if(e.target === lightboxOverlay){ closeLightbox(); }
+    if(e.target === suggestOverlay){ closeSuggestForm(); }
   });
 
   document.addEventListener('keydown', (e) => {
-    if(e.key === 'Escape'){ closeProfile(); closeLightbox(); }
+    if(e.key === 'Escape'){ closeProfile(); closeLightbox(); closeSuggestForm(); }
   });
 </script>
 
