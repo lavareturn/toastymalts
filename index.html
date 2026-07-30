@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toasty Malts — Craft Beer Reviews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --malt-black:#151009;
+    --oak:#241a10;
+    --oak-light:#2e2115;
+    --copper:#c8842e;
+    --copper-bright:#e6a34a;
+    --foam:#f2e8d3;
+    --foam-dim:#c9bda3;
+    --hop-green:#6f8f4a;
+    --stout:#8a4a2f;
+    --lager:#d9b44a;
+    --line: rgba(242,232,211,0.09);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--malt-black);
+    color:var(--foam-dim);
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    line-height:1.6;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; color:var(--foam); margin:0;}
+  a{color:inherit;}
+  button{font-family:inherit;}
+
+  body::before{
+    content:"";
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(200,132,46,0.06), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(111,143,74,0.05), transparent 35%);
+  }
+
+  nav{
+    position:sticky; top:0; z-index:20;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 40px;
+    background:rgba(21,16,9,0.88);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex; align-items:center;}
+  .brand img{height:52px; width:52px; border-radius:50%; display:block;}
+  .nav-links{display:flex; gap:32px;}
+  .nav-links a{
+    text-decoration:none; color:var(--foam-dim); font-size:0.92em; font-weight:500;
+    letter-spacing:0.03em; text-transform:uppercase; transition:color .2s;
+  }
+  .nav-links a:hover{color:var(--copper-bright);}
+
+  .hero{
+    position:relative; z-index:1;
+    padding:110px 40px 90px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+    overflow:hidden;
+    background:
+      linear-gradient(180deg, rgba(21,16,9,0.5) 0%, rgba(21,16,9,0.78) 60%, rgba(21,16,9,1) 100%),
+      url('images/Background_hero.png') center 30%/cover no-repeat;
+    border-bottom:none;
+  }
+  .hero-bg{
+    position:absolute; inset:0; z-index:0;
+    pointer-events:none;
+  }
+  .hero-bg svg{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+  }
+  .hero-content{position:relative; z-index:2;}
+
+  /* rising bubbles */
+  .bubble{
+    position:absolute; bottom:-40px; z-index:1; pointer-events:none;
+    background:radial-gradient(circle at 30% 30%, rgba(242,232,211,0.35), rgba(242,232,211,0.05));
+    border-radius:50%;
+    animation:rise linear infinite;
+  }
+  @keyframes rise{
+    0%{ transform:translateY(0) scale(1); opacity:0.5; }
+    100%{ transform:translateY(-620px) scale(1.3); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .bubble{ animation:none; display:none; }
+  }
+
+  .hero .eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:0.78em; letter-spacing:0.25em;
+    color:var(--hop-green); text-transform:uppercase; margin-bottom:18px; display:block;
+  }
+  .hero h1{
+    font-size:clamp(3em, 8vw, 5.6em);
+    font-weight:600; font-style:italic;
+    color:var(--foam);
+    line-height:1.02;
+  }
+  .hero h1 em{
+    font-style:normal; color:var(--copper-bright);
+    text-decoration:underline; text-decoration-color:var(--stout); text-decoration-thickness:4px;
+    text-underline-offset:10px;
+  }
+  .hero p{max-width:75%; margin:22px auto 0; color:var(--foam-dim); font-size:1.08em;}
+  .hero p.tagline{
+    margin:14px auto 0; max-width:none;
+    font-family:'Fraunces',serif; font-style:italic; font-weight:500;
+    font-size:1.4em; color:var(--hop-green);
+  }
+
+  .search-bar{margin:36px auto 0; max-width:520px; position:relative;}
+  .search-bar input{
+    width:100%; padding:14px 20px; font-size:1em;
+    background:var(--oak); border:1px solid var(--line); border-radius:999px;
+    color:var(--foam); font-family:'Inter',sans-serif;
+  }
+  .search-bar input:focus{outline:2px solid var(--copper); outline-offset:2px;}
+  .search-bar input::placeholder{color:var(--foam-dim);}
+
+  section{position:relative; z-index:1; padding:70px 40px; max-width:1080px; margin:auto;}
+  .section-head{display:flex; align-items:baseline; gap:16px; margin-bottom:36px;}
+  .section-head h2{font-size:1.9em; font-weight:600;}
+  .section-head .count{font-family:'JetBrains Mono',monospace; color:var(--copper); font-size:0.85em;}
+
+  .cap{
+    --size:64px;
+    width:var(--size); height:var(--size); border-radius:50%; flex:none;
+    background:repeating-conic-gradient(var(--copper) 0deg 14deg, var(--copper-bright) 14deg 28deg);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 3px 10px rgba(0,0,0,0.45);
+  }
+  .cap.small{--size:44px;}
+  .cap-inner{
+    width:76%; height:76%; border-radius:50%;
+    background:var(--malt-black);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace; color:var(--foam);
+  }
+  .cap-inner .num{font-size:1.05em; font-weight:700; line-height:1;}
+  .cap.small .cap-inner .num{font-size:0.85em;}
+  .cap-inner .max{font-size:0.55em; color:var(--foam-dim); line-height:1;}
+
+  .taster-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:20px;}
+  .taster-card{
+    background:var(--oak); border:1px solid var(--line); border-radius:10px;
+    padding:20px; display:flex; gap:16px; align-items:flex-start;
+    text-align:left; width:100%; cursor:pointer;
+    transition:border-color .2s, transform .2s;
+    color:inherit; font-family:inherit;
+  }
+  .taster-card:hover, .taster-card:focus-visible{
+    border-color:var(--copper); transform:translateY(-2px);
+  }
+  .avatar{
+    width:56px; height:56px; border-radius:50%; flex:none;
+    object-fit:cover; object-position:top center;
+    border:2px solid var(--copper);
+  }
+  .taster-card h3{font-size:1.05em; margin-bottom:4px;}
+  .taster-card .role{font-size:0.78em; color:var(--copper-bright); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; display:block;}
+  .taster-card p{margin:0; font-size:0.92em; font-style:italic; color:var(--foam-dim);}
+  .taster-card .view-link{
+    display:inline-block; margin-top:8px; font-size:0.78em; font-weight:600;
+    color:var(--copper); text-transform:uppercase; letter-spacing:0.04em;
+  }
+
+  .tag-filter-bar{
+    display:flex; flex-wrap:wrap; gap:10px; margin-bottom:30px;
+  }
+  .filter-pill{
+    font-family:'JetBrains Mono',monospace; font-size:0.78em; text-transform:uppercase;
+    letter-spacing:0.05em; padding:8px 16px; border-radius:999px;
+    background:var(--oak); border:1px solid var(--line); color:var(--foam-dim);
+    cursor:pointer; transition:border-color .2s, color .2s, background .2s;
+  }
+  .filter-pill:hover{border-color:var(--copper); color:var(--foam);}
+  .filter-pill.active{
+    background:var(--copper); border-color:var(--copper); color:var(--malt-black); font-weight:700;
+  }
+
+  .review-card{
+    display:flex; gap:22px; align-items:flex-start;
+    background:var(--oak); border:1px solid var(--line); border-radius:10px;
+    padding:26px; margin-bottom:20px;
+  }
+  .review-card .body{flex:1;}
+  .review-card h3{font-size:1.25em; margin-bottom:6px;}
+  .tag{
+    display:inline-block; font-family:'JetBrains Mono',monospace; font-size:0.7em;
+    text-transform:uppercase; letter-spacing:0.08em; padding:3px 9px; border-radius:5px;
+    margin-bottom:10px; color:var(--malt-black); font-weight:700;
+  }
+  .tag.ipa{background:var(--hop-green);}
+  .tag.stout{background:var(--stout); color:var(--foam);}
+  .tag.lager{background:var(--lager);}
+  .tag.wheat{background:var(--foam); color:var(--malt-black);}
+  .review-card .quote{font-size:0.98em; color:var(--foam-dim);}
+  .review-card .byline{
+    margin-top:10px; font-size:0.85em; color:var(--copper-bright); font-weight:600;
+    background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .stars{color:var(--copper-bright); letter-spacing:2px;}
+
+  #latest ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px;}
+  #latest li{
+    display:flex; justify-content:space-between; align-items:center; gap:20px;
+    background:var(--oak); padding:16px 22px; border-left:3px solid var(--copper);
+  }
+  #latest li .who{color:var(--foam); font-weight:600; background:none; border:none; cursor:pointer; padding:0; font-family:inherit;}
+  #latest li .who:hover{color:var(--copper-bright);}
+  #latest li .what{color:var(--foam-dim); flex:1; margin-left:14px;}
+  #latest li .stars{white-space:nowrap;}
+
+  #about p{
+    width:75vw; max-width:75vw;
+    position:relative; left:50%; transform:translateX(-50%);
+    margin-top:0; font-size:1.02em;
+  }
+
+  footer{
+    position:relative; z-index:1;
+    border-top:1px solid var(--line);
+    padding:44px 20px;
+    font-size:0.85em; color:var(--foam-dim);
+  }
+  .footer-inner{
+    display:flex; align-items:center; justify-content:center; gap:24px;
+    max-width:640px; margin:0 auto; text-align:left;
+  }
+  .footer-logo{width:96px; height:96px; border-radius:50%; flex:none; cursor:pointer; transition:transform .2s; border:0; padding:0; background:none;}
+  .footer-logo:hover, .footer-logo:focus-visible{transform:scale(1.06);}
+
+  .lightbox-overlay{
+    position:fixed; inset:0; z-index:110;
+    background:rgba(10,7,4,0.85);
+    display:none; align-items:center; justify-content:center;
+    padding:40px; cursor:zoom-out;
+  }
+  .lightbox-overlay.open{display:flex;}
+  .lightbox-overlay img{
+    max-width:min(80vw,520px); max-height:80vh;
+    border-radius:50%;
+    box-shadow:0 20px 70px rgba(0,0,0,0.6);
+  }
+  .lightbox-close{
+    position:absolute; top:24px; right:28px;
+    background:var(--oak-light); border:1px solid var(--line); color:var(--foam);
+    width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:1.2em; line-height:1;
+  }
+  .lightbox-close:hover{border-color:var(--copper);}
+  .footer-text p{margin:0 0 6px;}
+  .footer-text p:last-child{margin-bottom:0;}
+  .footer-text p.terms{font-size:0.85em; color:var(--foam-dim); opacity:0.75; max-width:420px;}
+  footer .brand-small{font-family:'Fraunces',serif; color:var(--copper-bright); font-weight:600;}
+
+  @media (max-width:520px){
+    .footer-inner{flex-direction:column; text-align:center;}
+  }
+
+  /* ---------- profile modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; z-index:100;
+    background:rgba(10,7,4,0.75);
+    display:none; align-items:flex-start; justify-content:center;
+    padding:60px 20px; overflow-y:auto;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--oak); border:1px solid var(--line); border-radius:14px;
+    max-width:640px; width:100%; padding:36px; position:relative;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal-close{
+    position:absolute; top:18px; right:18px;
+    background:var(--oak-light); border:1px solid var(--line); color:var(--foam);
+    width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:1.1em; line-height:1;
+  }
+  .modal-close:hover{border-color:var(--copper);}
+  .modal-head{display:flex; gap:20px; align-items:center; margin-bottom:8px;}
+  .modal-head img{
+    width:84px; height:84px; border-radius:50%; object-fit:cover; object-position:top center;
+    border:3px solid var(--copper); cursor:pointer; transition:transform .2s;
+  }
+  .modal-head img:hover, .modal-head img:focus-visible{transform:scale(1.06);}
+  .modal-head h2{font-size:1.7em;}
+  .modal-head .role{color:var(--copper-bright); font-size:0.82em; text-transform:uppercase; letter-spacing:0.06em; font-weight:600;}
+  .modal-bio{margin:18px 0 24px; font-style:italic; color:var(--foam); border-left:3px solid var(--copper); padding-left:16px;}
+  .modal-stats{display:flex; gap:28px; margin-bottom:28px; flex-wrap:wrap;}
+  .modal-stats div{font-family:'JetBrains Mono',monospace;}
+  .modal-stats .stat-num{font-size:1.5em; color:var(--foam); font-weight:700; display:block;}
+  .modal-stats .stat-label{font-size:0.72em; text-transform:uppercase; letter-spacing:0.06em; color:var(--foam-dim);}
+  .modal h3.section-label{font-size:1.05em; margin-bottom:14px; color:var(--foam);}
+  .modal .review-card{padding:18px; gap:16px;}
+  .modal .review-card h3{font-size:1.05em;}
+
+  @media (max-width:640px){
+    nav{flex-direction:column; gap:14px; padding:16px 20px;}
+    .nav-links{gap:18px; flex-wrap:wrap; justify-content:center;}
+    section{padding:50px 20px;}
+    .review-card{flex-direction:column;}
+    .modal{padding:24px;}
+    .modal-head{flex-direction:column; text-align:center;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    .taster-card{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="brand" href="#top" aria-label="Toasty Malts — home">
+    <img src="images/Logo_Toastymalts.png" alt="Toasty Malts">
+  </a>
+  <div class="nav-links">
+    <a href="#tasters">Tasters</a>
+    <a href="#reviews">Reviews</a>
+    <a href="#latest">Latest Tastes</a>
+    <a href="#about">About</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+
+  <div class="hero-bg">
+    <div class="bubble" style="left:12%; width:16px; height:16px; animation-duration:9s; animation-delay:0s;"></div>
+    <div class="bubble" style="left:22%; width:10px; height:10px; animation-duration:7s; animation-delay:1.5s;"></div>
+    <div class="bubble" style="left:75%; width:22px; height:22px; animation-duration:11s; animation-delay:0.5s;"></div>
+    <div class="bubble" style="left:85%; width:12px; height:12px; animation-duration:8s; animation-delay:3s;"></div>
+    <div class="bubble" style="left:50%; width:8px; height:8px; animation-duration:6.5s; animation-delay:2s;"></div>
+    <div class="bubble" style="left:35%; width:14px; height:14px; animation-duration:10s; animation-delay:4s;"></div>
+  </div>
+
+  <div class="hero-content">
+    <span class="eyebrow">Community Beer Ratings &amp; Tasting Notes</span>
+    <h1>Toasty <em>Malts</em></h1>
+    <p class="tagline">Every pour, rated.</p>
+    <p>Fanatical tasters with a shared obsession — what's in the glass. Honest scores on IPAs, stouts, and lagers — click a taster to see their full profile and every review they've written.</p>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search reviews by style or brand...">
+    </div>
+  </div>
+</header>
+
+<section id="tasters">
+  <div class="section-head"><h2>Taster Profiles</h2><span class="count" id="tasterCount"></span></div>
+  <div class="taster-grid" id="tasterGrid"></div>
+</section>
+
+<section id="reviews">
+  <div class="section-head"><h2>Beer Reviews</h2><span class="count" id="reviewCount"></span></div>
+  <div class="tag-filter-bar" id="tagFilterBar"></div>
+  <div id="reviewFeed"></div>
+</section>
+
+<section id="latest">
+  <div class="section-head"><h2>Latest Tastes</h2></div>
+  <ul id="latestList"></ul>
+</section>
+
+<section id="about">
+  <div class="section-head"><h2>About Toasty Malts</h2></div>
+  <p>Toasty Malts is a community-driven beer review site built around passionate tasters and their strong opinions — hop-heads, stout loyalists, and everyone in between. No sponsored placements, no aggregate scraping — every rating on this page comes from someone who actually finished the glass.</p>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <button class="footer-logo" id="footerLogoBtn" aria-label="Enlarge Toasty Malts logo" style="padding:0; border:none;">
+      <img src="images/Logo_Toastymalts.png" alt="Toasty Malts" style="width:100%; height:100%; border-radius:50%; display:block;">
+    </button>
+    <div class="footer-text">
+      <p><span class="brand-small">Toasty Malts</span> · Craft beer reviews and tasting notes</p>
+      <p>&copy; 2025 Toasty Malts</p>
+      <p class="terms">All content, reviews, and images on this site are the property of their respective creators unless otherwise noted. Unauthorized reproduction or redistribution is prohibited.</p>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent" role="dialog" aria-modal="true"></div>
+</div>
+
+<div class="lightbox-overlay" id="lightboxOverlay" role="dialog" aria-modal="true">
+  <button class="lightbox-close" id="lightboxCloseBtn" aria-label="Close">&times;</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<script>
+  const TASTERS = [
+    {
+      key: "captain",
+      name: "Captain",
+      role: "Belgian Ale Fan",
+      avatar: "images/Cap.PNG",
+      quote: "Fan of Belgian Ale, but into West Coast IPA lately.",
+      bio: "Started on Belgian Tripels and Dubbels, and has been drifting toward West Coast IPAs over the last year without fully leaving the old favorites behind.",
+      reviews: [
+        { beer: "Abbey Gold Tripel", style: "Belgian Ale", tag: "wheat", tags: ["Belgian Ale"], score: 91, stars: "★★★★★", quote: "Spiced, dry finish, classic Belgian character." }
+      ]
+    },
+    {
+      key: "iceman",
+      name: "Ice Man",
+      role: "Lager Loyalist",
+      avatar: "images/IceMan.PNG",
+      quote: "I am into lagers. Modelo — my life-changing beer.",
+      bio: "A lager purist through and through. Modelo was the beer that started it all, and everything since gets measured against that crisp, clean standard.",
+      reviews: [
+        { beer: "Golden Crisp", style: "Lager", tag: "lager", tags: ["Lager"], score: 72, stars: "★★★☆☆", quote: "Refreshing, light, perfect summer drink." }
+      ]
+    },
+    {
+      key: "ee",
+      name: "EE",
+      role: "Hardcore Hoppy",
+      avatar: "images/EE.PNG",
+      quote: "Hardcore hoppy. The hoppier, the better.",
+      bio: "If it doesn't bite back, it's not worth drinking. Chases the highest IBU counts on the menu and rates bitterness as a feature, not a flaw.",
+      reviews: [
+        { beer: "Citrus Bomb", style: "IPA", tag: "ipa", tags: ["IPA"], score: 88, stars: "★★★★☆", quote: "Crisp, citrusy, bold hop finish." }
+      ]
+    },
+    {
+      key: "gy",
+      name: "GY",
+      role: "Stout Devotee",
+      avatar: "images/GY.PNG",
+      quote: "My middle name is Stout.",
+      bio: "Dark, thick, and roasty is the only direction worth going. Collects barrel-aged stouts the way other people collect vinyl.",
+      reviews: [
+        { beer: "Midnight Roast", style: "Stout", tag: "stout", tags: ["Stout"], score: 96, stars: "★★★★★", quote: "Smooth, chocolate notes, perfect winter beer." }
+      ]
+    },
+    {
+      key: "lava",
+      name: "Lava",
+      role: "West Coast Crusher",
+      avatar: "images/Lava.PNG",
+      quote: "West Coast crusher. I like pine.",
+      bio: "Lives for resinous, piney West Coast IPAs — the kind that smell like a hike through a hop yard before the glass even reaches the table.",
+      reviews: [
+        { beer: "Forest Fire IPA", style: "IPA", tag: "ipa", tags: ["IPA", "West Coast"], score: 90, stars: "★★★★★", quote: "Sticky pine resin up front, sharp bitter finish." }
+      ]
+    },
+    {
+      key: "hustler",
+      name: "Hustler",
+      role: "Coffee Stout Hunter",
+      avatar: "images/Hustler.PNG",
+      quote: "Man, that coffee stout.",
+      bio: "Always tracking down the next cold-brew-adjacent stout. Judges every batch on how well the coffee and roasted malt actually work together.",
+      reviews: [
+        { beer: "Velvet Cocoa Stout", style: "Coffee Stout", tag: "stout", tags: ["Stout", "Coffee Stout"], score: 93, stars: "★★★★★", quote: "Rich espresso hit backed by dark chocolate malt." }
+      ]
+    },
+    {
+      key: "gc",
+      name: "GC",
+      role: "Summer Sipper",
+      avatar: "images/GB.PNG",
+      quote: "Where is my summer drink?",
+      bio: "Beer for the beach, not the cellar. Wants something light, easy, and gone before the ice melts — nothing that needs thinking about.",
+      reviews: [
+        { beer: "Bavarian Pilsner", style: "Pilsner", tag: "lager", tags: ["Lager", "Pilsner"], score: 80, stars: "★★★★☆", quote: "Clean, crackery, dangerously easy to drink." }
+      ]
+    },
+    {
+      key: "sk",
+      name: "SK",
+      role: "Hop-Free Zone",
+      avatar: "images/SK.PNG",
+      quote: "I don't do hops.",
+      bio: "No bitterness, no exceptions. Sticks to malt-forward wheat beers and kölsch styles where the hops stay firmly in the background.",
+      reviews: [
+        { beer: "Sunwheat Kölsch", style: "Kölsch", tag: "wheat", tags: ["Kölsch"], score: 84, stars: "★★★★☆", quote: "Soft, bready, barely a whisper of bitterness." }
+      ]
+    },
+    {
+      key: "gh",
+      name: "GH",
+      role: "Beer Devotee",
+      avatar: "images/GH.PNG",
+      quote: "\"Fermentation may have been a greater discovery than fire.\" — David Rains Wallace",
+      bio: "Treats every pour like it's worth studying, not just drinking. Orders the flight before committing to a full pint, and has genuine reverence for what fermentation can do.",
+      reviews: [
+        { beer: "Haze Bomb Double IPA", style: "Double IPA", tag: "ipa", tags: ["IPA", "Double IPA"], score: 88, stars: "★★★★½", quote: "Juicy, hazy, and dangerously smooth for 8.5% ABV." }
+      ]
+    },
+    {
+      key: "nm",
+      name: "NM",
+      role: "Bitter Biter",
+      avatar: "images/NM.PNG",
+      quote: "\"Beauty is in the eye of the beer holder.\" — Kinky Friedman",
+      bio: "Wears bitterness like a badge of honor. Chases the highest-IBU double IPAs on the menu and treats a sharp hop bite as a compliment to the brewer, not a flaw.",
+      reviews: [
+        { beer: "Skull Cracker Double IPA", style: "Double IPA", tag: "ipa", tags: ["IPA", "Double IPA"], score: 80, stars: "★★★★☆", quote: "Resinous and aggressively bitter — this one bites back." }
+      ]
+    }
+  ];
+
+  const tasterGrid = document.getElementById('tasterGrid');
+  const reviewFeed = document.getElementById('reviewFeed');
+  const latestList = document.getElementById('latestList');
+  const overlay = document.getElementById('modalOverlay');
+  const modalContent = document.getElementById('modalContent');
+
+  function reviewCardHTML(r, tasterName, tasterKey, capSize){
+    return `
+      <div class="review-card">
+        <div class="cap ${capSize||''}"><div class="cap-inner"><span class="num">${r.score}</span><span class="max">/100</span></div></div>
+        <div class="body">
+          <span class="tag ${r.tag}">${r.style}</span>
+          <h3>${r.beer}</h3>
+          <p class="quote">${r.quote}</p>
+          <div class="stars">${r.stars}</div>
+          <button class="byline" data-taster="${tasterKey}">— ${tasterName}</button>
+        </div>
+      </div>`;
+  }
+
+  // render taster grid
+  tasterGrid.innerHTML = TASTERS.map(t => `
+    <button class="taster-card" data-taster="${t.key}">
+      <img class="avatar" src="${t.avatar}" alt="${t.name}">
+      <div>
+        <h3>${t.name}</h3>
+        <span class="role">${t.role}</span>
+        <p>"${t.quote}"</p>
+        <span class="view-link">View profile →</span>
+      </div>
+    </button>
+  `).join('');
+  document.getElementById('tasterCount').textContent = String(TASTERS.length).padStart(2,'0');
+
+  // render review feed (all reviews, all tasters)
+  let allReviews = [];
+  TASTERS.forEach(t => t.reviews.forEach(r => allReviews.push({...r, tasterName: t.name, tasterKey: t.key})));
+  document.getElementById('reviewCount').textContent = String(allReviews.length).padStart(2,'0');
+
+  // build unique tag list across all reviews
+  const allTags = [...new Set(allReviews.flatMap(r => r.tags || []))].sort();
+  const tagFilterBar = document.getElementById('tagFilterBar');
+  let activeTag = null;
+  let searchQuery = '';
+
+  function renderFilterBar(){
+    tagFilterBar.innerHTML = `<button class="filter-pill ${activeTag === null ? 'active' : ''}" data-filter-tag="__all__">All</button>` +
+      allTags.map(tag => `<button class="filter-pill ${activeTag === tag ? 'active' : ''}" data-filter-tag="${tag}">${tag}</button>`).join('');
+  }
+
+  function reviewMatchesSearch(r, q){
+    if(!q) return true;
+    const haystack = [r.beer, r.style, r.tasterName, r.quote, ...(r.tags || [])].join(' ').toLowerCase();
+    return haystack.includes(q);
+  }
+
+  function renderReviewFeed(){
+    let filtered = activeTag === null ? allReviews : allReviews.filter(r => (r.tags || []).includes(activeTag));
+    const q = searchQuery.trim().toLowerCase();
+    if(q) filtered = filtered.filter(r => reviewMatchesSearch(r, q));
+
+    if(filtered.length){
+      reviewFeed.innerHTML = filtered.map(r => reviewCardHTML(r, r.tasterName, r.tasterKey)).join('');
+    } else if(q){
+      reviewFeed.innerHTML = `<p style="color:var(--foam-dim); font-style:italic;">No reviews match "${searchQuery}".</p>`;
+    } else {
+      reviewFeed.innerHTML = `<p style="color:var(--foam-dim); font-style:italic;">No reviews tagged "${activeTag}" yet.</p>`;
+    }
+  }
+
+  renderFilterBar();
+  renderReviewFeed();
+
+  tagFilterBar.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-filter-tag]');
+    if(!btn) return;
+    activeTag = btn.getAttribute('data-filter-tag') === '__all__' ? null : btn.getAttribute('data-filter-tag');
+    renderFilterBar();
+    renderReviewFeed();
+  });
+
+  const searchInput = document.getElementById('searchInput');
+  searchInput.addEventListener('input', (e) => {
+    searchQuery = e.target.value;
+    renderReviewFeed();
+  });
+  searchInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){
+      document.getElementById('reviews').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  });
+
+  // render latest tastes (last 3 reviews)
+  latestList.innerHTML = allReviews.slice(-3).reverse().map(r => `
+    <li>
+      <button class="who" data-taster="${r.tasterKey}">${r.tasterName}</button>
+      <span class="what">reviewed &ldquo;${r.beer}&rdquo;</span>
+      <span class="stars">${r.stars}</span>
+    </li>
+  `).join('');
+
+  function openProfile(key){
+    const t = TASTERS.find(x => x.key === key);
+    if(!t) return;
+    const avgScore = Math.round(t.reviews.reduce((s,r)=>s+r.score,0) / t.reviews.length);
+    modalContent.innerHTML = `
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close profile">&times;</button>
+      <div class="modal-head">
+        <img id="modalAvatarImg" src="${t.avatar}" alt="${t.name}">
+        <div>
+          <h2>${t.name}</h2>
+          <span class="role">${t.role}</span>
+        </div>
+      </div>
+      <p class="modal-bio">"${t.bio}"</p>
+      <div class="modal-stats">
+        <div><span class="stat-num">${t.reviews.length}</span><span class="stat-label">Reviews</span></div>
+        <div><span class="stat-num">${avgScore}</span><span class="stat-label">Avg Malt Score</span></div>
+      </div>
+      <h3 class="section-label">Contributions</h3>
+      ${t.reviews.map(r => reviewCardHTML(r, t.name, t.key, 'small')).join('')}
+    `;
+    overlay.classList.add('open');
+    document.getElementById('modalCloseBtn').addEventListener('click', closeProfile);
+    document.getElementById('modalAvatarImg').addEventListener('click', () => openLightbox(t.avatar, t.name));
+  }
+
+  function closeProfile(){
+    overlay.classList.remove('open');
+    modalContent.innerHTML = '';
+  }
+
+  const lightboxOverlay = document.getElementById('lightboxOverlay');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const footerLogoBtn = document.getElementById('footerLogoBtn');
+  const lightboxCloseBtn = document.getElementById('lightboxCloseBtn');
+
+  function openLightbox(src, alt){
+    lightboxImg.src = src;
+    lightboxImg.alt = alt || '';
+    lightboxOverlay.classList.add('open');
+  }
+  function closeLightbox(){ lightboxOverlay.classList.remove('open'); }
+
+  footerLogoBtn.addEventListener('click', () => openLightbox('images/Logo_Toastymalts.png', 'Toasty Malts logo, enlarged'));
+  lightboxCloseBtn.addEventListener('click', closeLightbox);
+
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('[data-taster]');
+    if(card){ openProfile(card.getAttribute('data-taster')); return; }
+    if(e.target === overlay){ closeProfile(); }
+    if(e.target === lightboxOverlay){ closeLightbox(); }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){ closeProfile(); closeLightbox(); }
+  });
+</script>
+
+</body>
+</html>
