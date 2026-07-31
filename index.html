@@ -194,6 +194,24 @@
     background:var(--copper); border-color:var(--copper); color:var(--malt-black); font-weight:700;
   }
 
+  .beer-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:20px;}
+  .beer-tile{
+    background:var(--oak); border:1px solid var(--line); border-radius:10px;
+    padding:22px; display:flex; gap:16px; align-items:flex-start;
+    text-align:left; width:100%; cursor:pointer;
+    transition:border-color .2s, transform .2s;
+    color:inherit; font-family:inherit;
+  }
+  .beer-tile:hover, .beer-tile:focus-visible{border-color:var(--copper); transform:translateY(-2px);}
+  .beer-tile .body{flex:1; min-width:0;}
+  .beer-tile h3{font-size:1.05em; margin-bottom:4px;}
+  .beer-tile .brewery{font-size:0.82em; color:var(--copper-bright); font-style:italic; margin-bottom:2px;}
+  .beer-tile .meta{display:flex; align-items:center; gap:12px; margin-top:12px; flex-wrap:wrap;}
+  .beer-tile .review-count{font-size:0.78em; color:var(--foam-dim); font-family:'JetBrains Mono',monospace;}
+  .beer-tile .view-link{
+    font-size:0.78em; font-weight:600; color:var(--copper); text-transform:uppercase; letter-spacing:0.04em;
+  }
+
   .review-card{
     display:flex; gap:22px; align-items:flex-start;
     background:var(--oak); border:1px solid var(--line); border-radius:10px;
@@ -213,6 +231,7 @@
   .tag.stout{background:var(--stout); color:var(--foam);}
   .tag.lager{background:var(--lager);}
   .tag.wheat{background:var(--foam); color:var(--malt-black);}
+  .tag.sour{background:#a8447a; color:var(--foam);}
   .review-card .quote{font-size:0.98em; color:var(--foam-dim);}
   .review-card .byline{
     margin-top:10px; font-size:0.85em; color:var(--copper-bright); font-weight:600;
@@ -313,6 +332,21 @@
   .modal h3.section-label{font-size:1.05em; margin-bottom:14px; color:var(--foam);}
   .modal .review-card{padding:18px; gap:16px;}
   .modal .review-card h3{font-size:1.05em;}
+  .beer-review-row{
+    display:flex; gap:14px; align-items:flex-start;
+    background:var(--oak-light); border:1px solid var(--line); border-radius:10px;
+    padding:16px; margin-bottom:14px;
+  }
+  .beer-review-row .taster-btn{
+    display:flex; align-items:center; gap:10px;
+    background:none; border:none; cursor:pointer; padding:0; color:inherit; font-family:inherit;
+  }
+  .beer-review-row .taster-btn img{width:38px; height:38px; border-width:2px;}
+  .beer-review-row .taster-btn strong{color:var(--foam); font-size:0.98em;}
+  .beer-review-row .taster-btn:hover strong{color:var(--copper-bright);}
+  .beer-review-row .body{flex:1; min-width:0;}
+  .beer-review-row .stars{display:block; margin:8px 0 6px;}
+  .beer-review-row .quote{margin:0; font-style:italic; color:var(--foam-dim); font-size:0.95em;}
 
   /* ---------- suggest-a-review form ---------- */
   .suggest-form label{
@@ -391,7 +425,7 @@
     <span class="eyebrow">Community Beer Ratings &amp; Tasting Notes</span>
     <h1>Toasty <em>Malts</em></h1>
     <p class="tagline">Every pour, rated.</p>
-    <p>Fanatical tasters with a shared obsession — what's in the glass. Honest scores on IPAs, stouts, and lagers — click a taster to see their full profile and every review they've written.</p>
+    <p>Fanatical tasters with a shared obsession — what's in the glass. Click a taster to see their full profile, or click a beer to see how every taster rated it.</p>
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="Search reviews by style or brand...">
     </div>
@@ -409,7 +443,7 @@
     <button class="suggest-btn" id="suggestReviewBtn">+ Suggest a Review</button>
   </div>
   <div class="tag-filter-bar" id="tagFilterBar"></div>
-  <div id="reviewFeed"></div>
+  <div id="reviewFeed" class="beer-grid"></div>
 </section>
 
 <section id="latest">
@@ -607,6 +641,17 @@
       reviews: [
         { beer: "Skull Cracker Double IPA", brewery: "Ironhop Brewing", style: "Double IPA", tag: "ipa", tags: ["IPA", "Double IPA"], score: 80, stars: "★★★★☆", quote: "Resinous and aggressively bitter — this one bites back." }
       ]
+    },
+    {
+      key: "jp",
+      name: "JP",
+      role: "Real Fruit Sour Ale Aficionado",
+      avatar: "images/JP.PNG",
+      quote: "No artificial flavors. Real fruit only. If it didn't ferment naturally, it doesn't belong in my glass.",
+      bio: "A hardcore wine guy at heart, JP brings the same obsession with terroir and natural fermentation to sour ales. He'll talk your ear off about Lactobacillus and Pediococcus cultures, but the second a beer tastes like a fruit extract instead of actual fruit, it's getting sent back.",
+      reviews: [
+        { beer: "Pucker Power Raspberry Sour", brewery: "Wildstock Brewing", style: "Fruited Sour Ale", tag: "sour", tags: ["Sour Ale"], score: 93, stars: "★★★★★", quote: "Real raspberries all the way through — tart, funky, and not a drop of extract in sight." }
+      ]
     }
   ];
 
@@ -645,10 +690,29 @@
   `).join('');
   document.getElementById('tasterCount').textContent = String(TASTERS.length).padStart(2,'0');
 
-  // render review feed (all reviews, all tasters)
+  // flatten all reviews, all tasters
   let allReviews = [];
   TASTERS.forEach(t => t.reviews.forEach(r => allReviews.push({...r, tasterName: t.name, tasterKey: t.key})));
-  document.getElementById('reviewCount').textContent = String(allReviews.length).padStart(2,'0');
+
+  // group reviews into one tile per beer (key = beer name + brewery)
+  function beerKey(r){ return (r.beer + '|||' + (r.brewery || '')).toLowerCase(); }
+
+  const beerMap = new Map();
+  allReviews.forEach(r => {
+    const k = beerKey(r);
+    if(!beerMap.has(k)){
+      beerMap.set(k, { key: k, beer: r.beer, brewery: r.brewery, style: r.style, tag: r.tag, tags: r.tags || [], reviews: [] });
+    }
+    beerMap.get(k).reviews.push(r);
+  });
+  const allBeers = Array.from(beerMap.values()).map(b => ({
+    ...b,
+    count: b.reviews.length,
+    avgScore: Math.round(b.reviews.reduce((s,r) => s + r.score, 0) / b.reviews.length)
+  }));
+
+  document.getElementById('reviewCount').textContent =
+    `${String(allBeers.length).padStart(2,'0')} beers · ${String(allReviews.length).padStart(2,'0')} reviews`;
 
   // build unique tag list across all reviews
   const allTags = [...new Set(allReviews.flatMap(r => r.tags || []))].sort();
@@ -661,23 +725,40 @@
       allTags.map(tag => `<button class="filter-pill ${activeTag === tag ? 'active' : ''}" data-filter-tag="${tag}">${tag}</button>`).join('');
   }
 
-  function reviewMatchesSearch(r, q){
+  function beerMatchesSearch(b, q){
     if(!q) return true;
-    const haystack = [r.beer, r.style, r.tasterName, r.quote, ...(r.tags || [])].join(' ').toLowerCase();
+    const haystack = [b.beer, b.style, b.brewery, ...b.tags, ...b.reviews.flatMap(r => [r.tasterName, r.quote])]
+      .join(' ').toLowerCase();
     return haystack.includes(q);
   }
 
+  function beerTileHTML(b){
+    return `
+      <button class="beer-tile" data-beer="${b.key}">
+        <div class="cap"><div class="cap-inner"><span class="num">${b.avgScore}</span><span class="max">/100</span></div></div>
+        <div class="body">
+          <span class="tag ${b.tag}">${b.style}</span>
+          <h3>${b.beer}</h3>
+          ${b.brewery ? `<div class="brewery">${b.brewery}</div>` : ''}
+          <div class="meta">
+            <span class="review-count">${b.count} review${b.count === 1 ? '' : 's'}</span>
+            <span class="view-link">View all →</span>
+          </div>
+        </div>
+      </button>`;
+  }
+
   function renderReviewFeed(){
-    let filtered = activeTag === null ? allReviews : allReviews.filter(r => (r.tags || []).includes(activeTag));
+    let filtered = activeTag === null ? allBeers : allBeers.filter(b => b.tags.includes(activeTag));
     const q = searchQuery.trim().toLowerCase();
-    if(q) filtered = filtered.filter(r => reviewMatchesSearch(r, q));
+    if(q) filtered = filtered.filter(b => beerMatchesSearch(b, q));
 
     if(filtered.length){
-      reviewFeed.innerHTML = filtered.map(r => reviewCardHTML(r, r.tasterName, r.tasterKey)).join('');
+      reviewFeed.innerHTML = filtered.map(b => beerTileHTML(b)).join('');
     } else if(q){
-      reviewFeed.innerHTML = `<p style="color:var(--foam-dim); font-style:italic;">No reviews match "${searchQuery}".</p>`;
+      reviewFeed.innerHTML = `<p style="color:var(--foam-dim); font-style:italic;">No beers match "${searchQuery}".</p>`;
     } else {
-      reviewFeed.innerHTML = `<p style="color:var(--foam-dim); font-style:italic;">No reviews tagged "${activeTag}" yet.</p>`;
+      reviewFeed.innerHTML = `<p style="color:var(--foam-dim); font-style:italic;">No beers tagged "${activeTag}" yet.</p>`;
     }
   }
 
@@ -741,6 +822,46 @@
   function closeProfile(){
     overlay.classList.remove('open');
     modalContent.innerHTML = '';
+  }
+
+  function beerReviewRowHTML(r){
+    const t = TASTERS.find(x => x.key === r.tasterKey);
+    return `
+      <div class="beer-review-row">
+        <div class="cap small"><div class="cap-inner"><span class="num">${r.score}</span><span class="max">/100</span></div></div>
+        <div class="body">
+          <button class="taster-btn" data-taster="${r.tasterKey}">
+            ${t ? `<img class="avatar" src="${t.avatar}" alt="${t.name}">` : ''}
+            <strong>${r.tasterName}</strong>
+          </button>
+          <span class="stars">${r.stars}</span>
+          <p class="quote">${r.quote}</p>
+        </div>
+      </div>`;
+  }
+
+  function openBeerProfile(key){
+    const b = allBeers.find(x => x.key === key);
+    if(!b) return;
+    modalContent.innerHTML = `
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close beer details">&times;</button>
+      <div class="modal-head">
+        <div class="cap" style="--size:84px"><div class="cap-inner"><span class="num">${b.avgScore}</span><span class="max">/100</span></div></div>
+        <div>
+          <span class="tag ${b.tag}">${b.style}</span>
+          <h2>${b.beer}</h2>
+          ${b.brewery ? `<span class="role">${b.brewery}</span>` : ''}
+        </div>
+      </div>
+      <div class="modal-stats">
+        <div><span class="stat-num">${b.count}</span><span class="stat-label">Reviews</span></div>
+        <div><span class="stat-num">${b.avgScore}</span><span class="stat-label">Avg Malt Score</span></div>
+      </div>
+      <h3 class="section-label">Taster Reviews</h3>
+      ${b.reviews.map(r => beerReviewRowHTML(r)).join('')}
+    `;
+    overlay.classList.add('open');
+    document.getElementById('modalCloseBtn').addEventListener('click', closeProfile);
   }
 
   const lightboxOverlay = document.getElementById('lightboxOverlay');
@@ -808,6 +929,8 @@
   });
 
   document.addEventListener('click', (e) => {
+    const beerTile = e.target.closest('[data-beer]');
+    if(beerTile){ openBeerProfile(beerTile.getAttribute('data-beer')); return; }
     const card = e.target.closest('[data-taster]');
     if(card){ openProfile(card.getAttribute('data-taster')); return; }
     if(e.target === overlay){ closeProfile(); }
