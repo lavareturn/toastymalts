@@ -141,7 +141,6 @@
   .cap{
     --size:64px;
     width:var(--size); height:var(--size); border-radius:50%; flex:none;
-    background:repeating-conic-gradient(var(--copper) 0deg 14deg, var(--copper-bright) 14deg 28deg);
     display:flex; align-items:center; justify-content:center;
     box-shadow:0 3px 10px rgba(0,0,0,0.45);
   }
@@ -238,7 +237,7 @@
     background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;
     text-underline-offset:3px;
   }
-  .stars{color:var(--copper-bright); letter-spacing:2px;}
+  .score-badge{color:var(--copper-bright); font-family:'JetBrains Mono',monospace; font-weight:700;}
 
   #latest ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px;}
   #latest li{
@@ -248,7 +247,7 @@
   #latest li .who{color:var(--foam); font-weight:600; background:none; border:none; cursor:pointer; padding:0; font-family:inherit;}
   #latest li .who:hover{color:var(--copper-bright);}
   #latest li .what{color:var(--foam-dim); flex:1; margin-left:14px;}
-  #latest li .stars{white-space:nowrap;}
+  #latest li .score-badge{white-space:nowrap;}
 
   #about p{
     width:75vw; max-width:75vw;
@@ -345,8 +344,7 @@
   .beer-review-row .taster-btn strong{color:var(--foam); font-size:0.98em;}
   .beer-review-row .taster-btn:hover strong{color:var(--copper-bright);}
   .beer-review-row .body{flex:1; min-width:0;}
-  .beer-review-row .stars{display:block; margin:8px 0 6px;}
-  .beer-review-row .quote{margin:0; font-style:italic; color:var(--foam-dim); font-size:0.95em;}
+  .beer-review-row .quote{margin:6px 0 0; font-style:italic; color:var(--foam-dim); font-size:0.95em;}
 
   /* ---------- suggest-a-review form ---------- */
   .suggest-form label{
@@ -405,7 +403,7 @@
   <div class="nav-links">
     <a href="#tasters">Tasters</a>
     <a href="#reviews">Reviews</a>
-    <a href="#latest">Latest Tastes</a>
+    <a href="#latest">Latest Pours</a>
     <a href="#about">About</a>
   </div>
 </nav>
@@ -447,7 +445,7 @@
 </section>
 
 <section id="latest">
-  <div class="section-head"><h2>Latest Tastes</h2></div>
+  <div class="section-head"><h2>Latest Pours</h2></div>
   <ul id="latestList"></ul>
 </section>
 
@@ -498,24 +496,8 @@
       <label for="sf-brewery">Brewery</label>
       <input type="text" id="sf-brewery" name="brewery" required placeholder="e.g. Ridgeline Brewing Co.">
 
-      <div class="form-row">
-        <div>
-          <label for="sf-style">Style</label>
-          <input type="text" id="sf-style" name="style" required placeholder="e.g. IPA, Stout, Lager">
-        </div>
-        <div>
-          <label for="sf-stars">Star Rating</label>
-          <select id="sf-stars" name="stars" required>
-            <option value="">Select...</option>
-            <option value="★☆☆☆☆">1 star</option>
-            <option value="★★☆☆☆">2 stars</option>
-            <option value="★★★☆☆">3 stars</option>
-            <option value="★★★★☆">4 stars</option>
-            <option value="★★★★½">4.5 stars</option>
-            <option value="★★★★★">5 stars</option>
-          </select>
-        </div>
-      </div>
+      <label for="sf-style">Style</label>
+      <input type="text" id="sf-style" name="style" required placeholder="e.g. IPA, Stout, Lager">
 
       <label for="sf-score">Malt Score (0–100)</label>
       <input type="number" id="sf-score" name="score" min="0" max="100" required placeholder="e.g. 88">
@@ -556,7 +538,7 @@
     },
     {
       key: "ee",
-      name: "EE",
+      name: "The Jocker",
       role: "Hardcore Hoppy",
       avatar: "images/EE.PNG",
       quote: "Hardcore hoppy. The hoppier, the better.",
@@ -567,7 +549,7 @@
     },
     {
       key: "gy",
-      name: "GY",
+      name: "Water Bender",
       role: "Stout Devotee",
       avatar: "images/GY.PNG",
       quote: "My middle name is Stout.",
@@ -600,7 +582,7 @@
     },
     {
       key: "gc",
-      name: "GC",
+      name: "Rock Breaker",
       role: "Summer Sipper",
       avatar: "images/GB.PNG",
       quote: "Where is my summer drink?",
@@ -611,7 +593,7 @@
     },
     {
       key: "sk",
-      name: "SK",
+      name: "Swag",
       role: "Hop-Free Zone",
       avatar: "images/SK.PNG",
       quote: "I don't do hops.",
@@ -622,7 +604,7 @@
     },
     {
       key: "gh",
-      name: "GH",
+      name: "Queen",
       role: "Beer Devotee",
       avatar: "images/GH.PNG",
       quote: "\"Fermentation may have been a greater discovery than fire.\" — David Rains Wallace",
@@ -644,16 +626,40 @@
     },
     {
       key: "jp",
-      name: "JP",
+      name: "Jimmer",
       role: "Real Fruit Sour Ale Aficionado",
       avatar: "images/JP.PNG",
       quote: "No artificial flavors. Real fruit only. If it didn't ferment naturally, it doesn't belong in my glass.",
-      bio: "A hardcore wine guy at heart, JP brings the same obsession with terroir and natural fermentation to sour ales. He'll talk your ear off about Lactobacillus and Pediococcus cultures, but the second a beer tastes like a fruit extract instead of actual fruit, it's getting sent back.",
+      bio: "A hardcore wine guy at heart, Jimmer brings the same obsession with terroir and natural fermentation to sour ales. He'll talk your ear off about Lactobacillus and Pediococcus cultures, but the second a beer tastes like a fruit extract instead of actual fruit, it's getting sent back.",
       reviews: [
         { beer: "Pucker Power Raspberry Sour", brewery: "Wildstock Brewing", style: "Fruited Sour Ale", tag: "sour", tags: ["Sour Ale"], score: 93, stars: "★★★★★", quote: "Real raspberries all the way through — tart, funky, and not a drop of extract in sight." }
       ]
     }
   ];
+
+  // build a scalloped cap ring where the lit teeth are proportional to the score (0-100)
+  function capRing(score){
+    const teeth = 24;
+    const step = 360 / teeth;
+    const filled = Math.round((Math.max(0, Math.min(100, score)) / 100) * teeth);
+    const stops = [];
+    for(let i = 0; i < teeth; i++){
+      const start = (i * step).toFixed(2);
+      const end = ((i + 1) * step).toFixed(2);
+      const lit = i < filled;
+      const color = lit
+        ? (i % 2 === 0 ? 'var(--copper)' : 'var(--copper-bright)')
+        : (i % 2 === 0 ? 'var(--oak)' : 'var(--oak-light)');
+      stops.push(`${color} ${start}deg ${end}deg`);
+    }
+    return `conic-gradient(${stops.join(', ')})`;
+  }
+
+  function capHTML(score, extraClass, extraStyle){
+    const cls = ['cap', extraClass].filter(Boolean).join(' ');
+    const style = `background:${capRing(score)};${extraStyle || ''}`;
+    return `<div class="${cls}" style="${style}"><div class="cap-inner"><span class="num">${score}</span><span class="max">/100</span></div></div>`;
+  }
 
   const tasterGrid = document.getElementById('tasterGrid');
   const reviewFeed = document.getElementById('reviewFeed');
@@ -664,13 +670,12 @@
   function reviewCardHTML(r, tasterName, tasterKey, capSize){
     return `
       <div class="review-card">
-        <div class="cap ${capSize||''}"><div class="cap-inner"><span class="num">${r.score}</span><span class="max">/100</span></div></div>
+        ${capHTML(r.score, capSize)}
         <div class="body">
           <span class="tag ${r.tag}">${r.style}</span>
           <h3>${r.beer}</h3>
           ${r.brewery ? `<div class="brewery">${r.brewery}</div>` : ''}
           <p class="quote">${r.quote}</p>
-          <div class="stars">${r.stars}</div>
           <button class="byline" data-taster="${tasterKey}">— ${tasterName}</button>
         </div>
       </div>`;
@@ -735,7 +740,7 @@
   function beerTileHTML(b){
     return `
       <button class="beer-tile" data-beer="${b.key}">
-        <div class="cap"><div class="cap-inner"><span class="num">${b.avgScore}</span><span class="max">/100</span></div></div>
+        ${capHTML(b.avgScore)}
         <div class="body">
           <span class="tag ${b.tag}">${b.style}</span>
           <h3>${b.beer}</h3>
@@ -784,12 +789,25 @@
     }
   });
 
-  // render latest tastes (last 3 reviews)
-  latestList.innerHTML = allReviews.slice(-3).reverse().map(r => `
+  // render latest pours: most recent 3 distinct beers, linking to the beer tile
+  function latestBeers(n){
+    const seen = new Set();
+    const result = [];
+    for(let i = allReviews.length - 1; i >= 0 && result.length < n; i--){
+      const r = allReviews[i];
+      const k = beerKey(r);
+      if(seen.has(k)) continue;
+      seen.add(k);
+      result.push({...r, key: k});
+    }
+    return result;
+  }
+
+  latestList.innerHTML = latestBeers(3).map(r => `
     <li>
-      <button class="who" data-taster="${r.tasterKey}">${r.tasterName}</button>
-      <span class="what">reviewed &ldquo;${r.beer}&rdquo;</span>
-      <span class="stars">${r.stars}</span>
+      <button class="who" data-beer="${r.key}">${r.beer}</button>
+      <span class="what">reviewed by ${r.tasterName}</span>
+      <span class="score-badge">${r.score}/100</span>
     </li>
   `).join('');
 
@@ -828,13 +846,12 @@
     const t = TASTERS.find(x => x.key === r.tasterKey);
     return `
       <div class="beer-review-row">
-        <div class="cap small"><div class="cap-inner"><span class="num">${r.score}</span><span class="max">/100</span></div></div>
+        ${capHTML(r.score, 'small')}
         <div class="body">
           <button class="taster-btn" data-taster="${r.tasterKey}">
             ${t ? `<img class="avatar" src="${t.avatar}" alt="${t.name}">` : ''}
             <strong>${r.tasterName}</strong>
           </button>
-          <span class="stars">${r.stars}</span>
           <p class="quote">${r.quote}</p>
         </div>
       </div>`;
@@ -846,7 +863,7 @@
     modalContent.innerHTML = `
       <button class="modal-close" id="modalCloseBtn" aria-label="Close beer details">&times;</button>
       <div class="modal-head">
-        <div class="cap" style="--size:84px"><div class="cap-inner"><span class="num">${b.avgScore}</span><span class="max">/100</span></div></div>
+        ${capHTML(b.avgScore, '', '--size:84px')}
         <div>
           <span class="tag ${b.tag}">${b.style}</span>
           <h2>${b.beer}</h2>
